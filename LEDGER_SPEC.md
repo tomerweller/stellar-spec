@@ -1369,8 +1369,12 @@ The `finalizeLedgerTxnChanges` procedure:
    b. Resolve the background eviction scan started at the previous
       ledger. This produces a set of eviction candidates. Filter
       candidates: any entry whose TTL key appears in the current
-      ledger's modified TTL key set (i.e., was touched by a
+       ledger's modified TTL key set (i.e., was touched by a
       transaction in this ledger) MUST be excluded from eviction.
+      Additionally, if an eviction candidate's **live entry key**
+      appears in the current ledger's modified key set, the
+      implementation MUST treat this as an internal consistency
+      failure and MUST NOT evict the entry from the stale snapshot.
       The remaining candidates form the final set of evicted entries.
    c. For protocol 24+ (persistent eviction):
       - Collect restored hot archive keys.

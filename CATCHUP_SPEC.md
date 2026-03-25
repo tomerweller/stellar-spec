@@ -311,6 +311,7 @@ File type string mappings:
 | `ERR_OVERSHOT` | Gap in ledger sequence (missing entries). |
 | `ERR_UNDERSHOT` | Unexpected duplicate or backward sequence. |
 | `ERR_MISSING_ENTRIES` | File ended before the expected ledger count. |
+| `ERR_CORRUPT_HEADER` | Ledger header material could not be parsed or triggered a runtime failure during verification. |
 
 ---
 
@@ -991,7 +992,7 @@ Once all buffered ledgers are drained:
 | Transaction file download | Up to `RETRY_A_LOT` (32) retries with archive rotation. |
 | Ledger chain verification | No retry. |
 | Bucket application | No retry. |
-| Transaction replay (per-checkpoint) | No retry. |
+| Transaction replay (per-checkpoint) | Up to `RETRY_A_FEW` (5) retries. On retry, replay resumes from `current LCL + 1` rather than the original replay-range start. |
 | Ledger application | No retry. |
 
 ### 13.2 Archive Rotation
@@ -1043,10 +1044,14 @@ If a downloaded file fails hash verification:
 - **Bucket files**: The download is retried (possibly from a different
   archive). If retries are exhausted, the catchup fails.
 - **Ledger headers**: Chain verification reports the specific error
-  type (bad hash, bad version, etc.) and the catchup fails.
+  type (bad hash, bad version, corrupt header, etc.) and the catchup fails.
 - **Transaction sets**: The transaction set hash is verified against
   the ledger header's `scpValue.txSetHash` during replay. A mismatch
   causes a fatal error.
+
+Runtime failures while parsing or iterating downloaded ledger-header
+material MUST be classified as `ERR_CORRUPT_HEADER`, treated as
+history corruption rather than a transient network error.
 
 ---
 

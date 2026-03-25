@@ -2213,6 +2213,18 @@ function doApply(op, ltx):
   which includes `contractIDPreimage`, `executable`, and
   `constructorArgs<>` (vector of `SCVal`).
 
+**Create-contract pairing rules**:
+- If `contractIDPreimage.type() == CONTRACT_ID_PREIMAGE_FROM_ASSET`,
+  then `executable.type()` MUST be
+  `CONTRACT_EXECUTABLE_STELLAR_ASSET`.
+- If `contractIDPreimage.type() == CONTRACT_ID_PREIMAGE_FROM_ADDRESS`,
+  then `executable.type()` MUST be `CONTRACT_EXECUTABLE_WASM`.
+- Any other preimage/executable pairing is invalid.
+
+These rules are enforced during transaction admission and
+transaction-set construction. A transaction violating them MUST be
+rejected with `txSOROBAN_INVALID`.
+
   **Constructor semantics** (CAP-0058):
   - A Wasm exporting `__constructor` is considered to have a
     constructor, but only if the Wasm's Soroban environment version

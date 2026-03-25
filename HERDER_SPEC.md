@@ -513,8 +513,14 @@ The construction of a transaction set proceeds as follows:
 2. **Trim invalid transactions**: For each phase, validate every
    transaction against a snapshot of the current ledger state
    (at `lastClosedLedgerSeq + 1`). Remove any transaction that
-   fails validation. The removed transactions are recorded for
-   diagnostic purposes but do not affect the construction.
+   fails validation. After this per-transaction pass, group the
+   remaining transactions by fee source account and sum each
+   group's **full fees**. If a fee source's available native
+   balance at `lastClosedLedgerSeq + 1` is less than the summed
+   full fee, then **all** transactions in that group MUST be
+   removed from the candidate phase. The removed transactions are
+   recorded for diagnostic purposes but do not affect the
+   construction.
 
 3. **Apply surge pricing**: For each phase, apply the surge
    pricing mechanism (Section 12) to select the highest-fee
@@ -846,6 +852,14 @@ ledger state at `lastClosedLedgerSeq + 1`. This includes
 sequence number checks, time bound checks, fee sufficiency,
 and all other per-transaction validation rules defined in
 TX_SPEC §3.
+
+After the individual validation pass, the validator MUST also
+perform an **aggregate fee-source affordability** check within
+the phase: group transactions by fee source account, sum the
+group's full fees, and compare that total against the fee
+source's available native balance at `lastClosedLedgerSeq + 1`.
+If the available balance is insufficient, all transactions from
+that fee source in the phase are invalid.
 
 ### 8.5 Legacy Transaction Set Validation
 
@@ -1686,19 +1700,26 @@ A validator configures upgrade proposals through administrative
 parameters:
 
 - **Upgrade values**: The desired new values for each upgrade
-  type.
+   type.
 - **Effective time**: The earliest UNIX timestamp at which the
-  upgrade should be proposed.
+   upgrade should be proposed.
+- **Expiration period**: The amount of time after the scheduled
+  upgrade time during which the upgrade remains eligible for
+  nomination. If unset, the default expiration period is **15
+  minutes**.
+- **Nomination timeout limit**: The maximum number of nomination
+  timer expirations a slot may experience before leaders begin
+  stripping upgrades from newly added self-votes. If unset, the
+  limit defaults to effectively unlimited.
 
 When constructing a StellarValue for nomination, the herder
 includes an upgrade step for each configured upgrade whose
 effective time has passed and whose value differs from the
 current ledger header value.
 
-Upgrade proposals SHOULD have an expiration period
-(RECOMMENDED: 12 hours). After the expiration period, the
-herder SHOULD stop proposing the upgrade even if it has not
-been adopted, to avoid stale proposals persisting indefinitely.
+After the expiration period, the herder SHOULD stop proposing
+the upgrade even if it has not been adopted, to avoid stale
+proposals persisting indefinitely.
 
 ### 15.4 Upgrade Validation
 
