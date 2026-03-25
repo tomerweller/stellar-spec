@@ -1,6 +1,6 @@
 # Stellar Protocol Specification Suite
 
-**Version:** 25 (stellar-core v25.1.1 / Protocol 25)
+**Version:** 25 (stellar-core v25.2.2 / Protocol 25)
 **Status:** Informational
 **Date:** 2026-02-25
 
@@ -10,7 +10,7 @@
 
 This directory contains a comprehensive, implementation-agnostic
 specification of the Stellar network protocol, derived exclusively
-from the vetted stellar-core (v25.1.1) reference implementation. The
+from the vetted stellar-core (v25.2.2) reference implementation. The
 specifications collectively define the observable behavior that any
 conforming implementation MUST reproduce.
 

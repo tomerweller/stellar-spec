@@ -1,6 +1,6 @@
 # Stellar Consensus Protocol (SCP) Specification
 
-**Version:** 25 (stellar-core v25.1.1 / Protocol 25)
+**Version:** 25 (stellar-core v25.2.2 / Protocol 25)
 **Status:** Informational
 **Date:** 2026-02-20
 
@@ -929,7 +929,7 @@ nominate(value, previousValue, timedout):
         if mVotes is empty:
             shouldVoteForValue = true
 
-        // 7b. Upgrade stripping after timeout (v25.1.1+)
+        // 7b. Upgrade stripping after timeout
         // If nomination has timed out enough times and all current votes
         // contain upgrades, strip upgrades from the value to improve liveness.
         if mTimerExpCount >= getUpgradeNominationTimeoutLimit():

@@ -1,6 +1,6 @@
 # Stellar Transaction Processing Specification
 
-**Version:** 25 (stellar-core v25.1.1 / Protocol 25)
+**Version:** 25 (stellar-core v25.2.2 / Protocol 25)
 **Status:** Informational
 **Date:** 2026-02-20
 
@@ -32,7 +32,7 @@
 ### 1.1 Purpose and Scope
 
 This document specifies the Stellar transaction processing subsystem as
-implemented in stellar-core v25.1.1. The transaction subsystem governs how
+implemented in stellar-core v25.2.2. The transaction subsystem governs how
 transactions are validated, how fees are computed and charged, how
 operations mutate ledger state, how results and metadata are constructed,
 and how Soroban smart contract transactions are executed.
@@ -48,7 +48,7 @@ out of scope except where they directly affect determinism or
 correctness.
 
 This specification is **implementation agnostic**. It is derived
-exclusively from the vetted stellar-core C++ implementation (v25.1.1)
+exclusively from the vetted stellar-core C++ implementation (v25.2.2)
 and its pseudocode companion (stellar-core-pc). Any conforming
 implementation that produces identical observable behavior (transaction
 results, metadata, ledger state changes) for all valid inputs is
@@ -1504,7 +1504,12 @@ Authorizes or deauthorizes a trustline (issuer only).
         `loadPoolShareTrustLinesByAccountAndAsset`), not only entries
         already in the transaction's working set. This requires a
         secondary index mapping `(accountID, asset)` → pool IDs.
-      - For each such pool share trustline:
+      - The resulting pool share trustline keys MUST be sorted in
+        canonical `LedgerKey` order before processing. The query
+        returns results in hash-map iteration order which is
+        non-deterministic; sorting ensures identical behavior across
+        all validators.
+      - For each such pool share trustline (in sorted order):
         1. Withdraw the account's proportional share from the pool.
         2. Create a claimable balance for each withdrawn asset
            (claimant: the account, predicate: unconditional).
@@ -1809,7 +1814,12 @@ only). `@version(≥17)`.
         `loadPoolShareTrustLinesByAccountAndAsset`), not only entries
         already in the transaction's working set. This requires a
         secondary index mapping `(accountID, asset)` → pool IDs.
-      - For each such pool share trustline:
+      - The resulting pool share trustline keys MUST be sorted in
+        canonical `LedgerKey` order before processing. The query
+        returns results in hash-map iteration order which is
+        non-deterministic; sorting ensures identical behavior across
+        all validators.
+      - For each such pool share trustline (in sorted order):
         1. Withdraw the account's proportional share from the pool.
         2. Create a claimable balance for each withdrawn asset
            (claimant: the account, predicate: unconditional).
@@ -3041,7 +3051,7 @@ may be updated via network upgrades:
 |-----------|-------------|
 | [rfc2119] | Bradner, S., "Key words for use in RFCs to Indicate Requirement Levels", BCP 14, RFC 2119, March 1997. |
 | [stellar-xdr] | Stellar XDR definitions: `Stellar-transaction.x`, `Stellar-ledger-entries.x`, `Stellar-ledger.x`, `Stellar-types.x`. https://github.com/stellar/stellar-xdr/tree/curr/ |
-| [stellar-core] | stellar-core v25.1.1 source code (tag v25.1.1). https://github.com/stellar/stellar-core |
+| [stellar-core] | stellar-core v25.2.2 source code (tag v25.2.2). https://github.com/stellar/stellar-core |
 | [CAP-0021] | Stellar CAP-0021, "Preconditions V2". https://stellar.org/protocol/cap-21 |
 | [CAP-0046] | Stellar CAP-0046, "Soroban Smart Contracts". https://stellar.org/protocol/cap-46 |
 | [SCP whitepaper] | Stellar Consensus Protocol whitepaper. https://www.stellar.org/papers/stellar-consensus-protocol |

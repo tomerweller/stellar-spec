@@ -1,6 +1,6 @@
 # Herder Specification
 
-**Version:** 25 (stellar-core v25.1.1 / Protocol 25)
+**Version:** 25 (stellar-core v25.2.2 / Protocol 25)
 **Status:** Informational
 **Date:** 2026-02-20
 
@@ -34,7 +34,7 @@
 ### 1.1 Purpose and Scope
 
 This document specifies the Herder subsystem of the Stellar network as
-derived from stellar-core v25.1.1. The herder is the **orchestration
+derived from stellar-core v25.2.2. The herder is the **orchestration
 layer** that drives consensus rounds by bridging the SCP consensus
 library, the transaction pool, the overlay network, and the ledger
 close pipeline.
@@ -412,11 +412,17 @@ following checks:
 
 3. **Close time lower bound**: `closeTime > lastClosedLedgerCloseTime`.
    Values with close times at or before the last closed ledger
-   MUST be rejected.
+   MUST be rejected. **Exception**: When a node is tracking
+   at or near genesis (`trackingConsensusLedgerIndex <=
+   GENESIS_LEDGER_SEQ`) and the envelope's slot is NOT the
+   node's next consensus ledger, close time bounds are relaxed
+   to allow the network to advance from a stuck genesis state
+   (typically relevant for test networks).
 
 4. **Close time upper bound**: `closeTime <= currentWallClock +
    MAX_TIME_SLIP_SECONDS`.
    Values with close times too far in the future MUST be rejected.
+   The same genesis exception from check 3 applies.
 
 5. **Slot validity**: The slot index MUST satisfy both a lower
    and upper bound relative to the node's current last closed
@@ -744,12 +750,18 @@ checks MUST pass:
      order, with components having no `baseFee` (nullopt)
      sorted first.
    - No two components MAY share the same `baseFee` value.
+   - If a component specifies a `baseFee`, it MUST be
+     non-negative. Components with negative `baseFee` values
+     MUST be rejected.
    - No component MAY be empty (zero transactions).
 
 5. **Parallel phase structure** (for phases with `v=1`):
    - The phase MAY contain zero or more stages.  A phase with
      zero stages represents a transaction set with no Soroban
      transactions (see CAP-0063).
+   - If the phase specifies a `baseFee`, it MUST be
+     non-negative. Phases with negative `baseFee` values
+     MUST be rejected.
    - No stage MAY be empty (zero clusters).
    - No cluster MAY be empty (zero transactions).
 
@@ -1219,9 +1231,11 @@ The same priority queue structure is used in two contexts:
 ### 12.2 Fee Rate Comparison
 
 Fee rates are compared as ratios of inclusion fee to operation
-count: `feeRate = inclusionFee / numOperations`. To avoid
-floating-point arithmetic, comparisons use cross-multiplication
-with 128-bit integer arithmetic:
+count: `feeRate = inclusionFee / max(numOperations, 1)`. The
+`max(…, 1)` guard prevents division by zero for malformed
+transactions with zero operations. To avoid floating-point
+arithmetic, comparisons use cross-multiplication with 128-bit
+integer arithmetic:
 
 ```
 feeRate(tx1) < feeRate(tx2)
@@ -1797,7 +1811,7 @@ by implementations:
 ### 17.2 Recommended Parameters
 
 These values are operational parameters. The values listed are
-RECOMMENDED defaults derived from stellar-core v25.1.1:
+RECOMMENDED defaults derived from stellar-core v25.2.2:
 
 | Parameter | Recommended Value | Description |
 |-----------|-------------------|-------------|

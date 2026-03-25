@@ -1,6 +1,6 @@
 # Stellar Ledger Close Pipeline Specification
 
-**Version:** 25 (stellar-core v25.1.1 / Protocol 25)
+**Version:** 25 (stellar-core v25.2.2 / Protocol 25)
 **Status:** Informational
 **Date:** 2026-02-20
 
@@ -34,7 +34,7 @@
 ### 1.1 Purpose and Scope
 
 This document specifies the ledger close pipeline as implemented in
-stellar-core v25.1.1. The ledger close pipeline is the deterministic
+stellar-core v25.2.2. The ledger close pipeline is the deterministic
 process by which the network transforms an agreed-upon transaction set
 (from SCP consensus) and the current ledger state into a new committed
 ledger state. It encompasses:
@@ -54,7 +54,7 @@ ledger state. It encompasses:
 - The genesis ledger bootstrap procedure.
 
 This specification is **implementation agnostic**. It is derived
-exclusively from the vetted stellar-core C++ implementation (v25.1.1) and
+exclusively from the vetted stellar-core C++ implementation (v25.2.2) and
 its pseudocode companion (stellar-core-pc). Any conforming
 implementation that produces identical ledger hashes, transaction result
 hashes, BucketList hashes, and ledger close metadata for all valid
@@ -1589,7 +1589,7 @@ Additionally, for parallel Soroban execution (protocol 23+):
 |--------|-----------------|
 | **Execution threads** | Short-lived threads spawned per cluster for parallel Soroban transaction execution. Read-only access to the apply state. |
 
-In v25.1.1, parallel Soroban apply is enabled by default for protocol
+In v25.2.2, parallel Soroban apply is enabled by default for protocol
 23+. The previous experimental flag has been removed.
 
 ### 14.2 Thread Safety
@@ -1738,7 +1738,7 @@ order book and path finding.
 | Reference | Description |
 |-----------|-------------|
 | [rfc2119] | Bradner, S., "Key words for use in RFCs to Indicate Requirement Levels", BCP 14, RFC 2119, March 1997. |
-| [stellar-core] | stellar-core v25.1.1 source code, `src/ledger/`, `src/herder/`. |
+| [stellar-core] | stellar-core v25.2.2 source code, `src/ledger/`, `src/herder/`. |
 | [stellar-core-pc] | stellar-core pseudocode companion, `src/ledger/`, `src/herder/`. |
 | [BucketListDB Spec] | Stellar BucketList and BucketListDB Specification (companion document). |
 | [SCP Spec] | Stellar Consensus Protocol (SCP) Specification (companion document). |

@@ -1,6 +1,6 @@
 # Stellar Overlay Protocol Specification
 
-**Version:** 25 (Overlay Protocol v35–v38)
+**Version:** 25 (Overlay Protocol v38–v39)
 **Status:** Informational
 **Date:** 2026-02-20
 
@@ -32,7 +32,7 @@
 ### 1.1 Purpose and Scope
 
 This document specifies the Stellar Overlay Protocol as implemented in
-stellar-core v25.1.1. The overlay protocol governs how Stellar network nodes
+stellar-core v25.2.2. The overlay protocol governs how Stellar network nodes
 discover peers, establish authenticated connections, propagate transactions
 and consensus messages, manage flow control, and conduct network topology
 surveys.
@@ -819,6 +819,9 @@ case GET_SCP_STATE: uint32 getSCPLedgerSeq;
 
 A value of 0 means "the latest ledger".
 
+**Rate limiting**: Subject to per-peer rate limiting with a fixed
+cap of 10 requests per window (Section 10.5).
+
 ### 7.4 Transaction Set Messages
 
 #### 7.4.1 GET_TX_SET
@@ -1426,8 +1429,8 @@ Preferred peers receive priority treatment:
 
 ### 10.5 Rate Limiting
 
-Per-peer rate limiting is applied to `GET_TX_SET` and
-`GET_SCP_QUORUMSET` requests using a sliding window:
+Per-peer rate limiting is applied to `GET_TX_SET`,
+`GET_SCP_QUORUMSET`, and `GET_SCP_STATE` requests using a sliding window:
 
 ```
 QUERY_WINDOW = expectedLedgerCloseTime * MAX_SLOTS_TO_REMEMBER
@@ -1439,10 +1442,15 @@ With defaults:
 - `MAX_SLOTS_TO_REMEMBER`: 12
 - `QUERY_RESPONSE_MULTIPLIER`: 5
 - `QUERY_WINDOW`: 60 seconds
-- `QUERIES_PER_WINDOW`: 300
+- `QUERIES_PER_WINDOW`: 300 (for `GET_TX_SET` and `GET_SCP_QUORUMSET`)
+- `GET_SCP_STATE_MAX_RATE`: 10 (fixed cap for `GET_SCP_STATE`)
 
 If a peer exceeds the limit, subsequent requests within the window are
 silently ignored (no error is sent, no drop occurs).
+
+`GET_SCP_STATE` uses a fixed rate limit of `GET_SCP_STATE_MAX_RATE`
+(10) requests per window, rather than the computed
+`QUERIES_PER_WINDOW` value used by the other message types.
 
 ### 10.6 Peer Banning
 
@@ -2083,7 +2091,7 @@ its connections, are mitigated by:
 
 | Reference | Title |
 |-----------|-------|
-| [stellar-core][stellar-core] | Stellar Core reference implementation (v25.1.1) |
+| [stellar-core][stellar-core] | Stellar Core reference implementation (v25.2.2) |
 | [RFC 7748][rfc7748] | Elliptic Curves for Security (X25519) |
 | [RFC 8032][rfc8032] | Edwards-Curve Digital Signature Algorithm (Ed25519) |
 | [RFC 5869][rfc5869] | HMAC-based Extract-and-Expand Key Derivation Function (HKDF) |
